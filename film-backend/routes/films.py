@@ -72,6 +72,54 @@ def get_newest_film():
         raise HTTPException(status_code=404, detail="Aucun film trouvé")
     return parse_json(film)
 
+
+@router.get("/top")
+def get_top_films():
+    films = films_collection.find(
+        {
+            "vote_average": {"$ne": 0},
+            "vote_count": {"$gte": 25}
+        }
+    ).sort("vote_average", -1).limit(10)
+
+    return parse_json(films)
+
+
+@router.get("/average-rating")
+def get_average_rating():
+    pipeline = [
+        {"$match": {"vote_average": {"$ne": 0}}},
+        {"$group": {
+            "_id": None,
+            "average_rating": {"$avg": "$vote_average"}
+        }}
+    ]
+    result = list(films_collection.aggregate(pipeline))
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Pas de données pour la moyenne")
+
+    return {"average_rating": round(result[0]["average_rating"], 2)}
+
+from pydantic import BaseModel
+
+class GenreRequest(BaseModel):
+    genre_id: int
+
+@router.post("/top-by-genre")
+def get_top_films_by_genre(payload: GenreRequest):
+    genre_id = payload.genre_id
+
+    films = films_collection.find(
+        {
+            "vote_average": {"$ne": 0},
+            "vote_count": {"$gte": 25},
+            "genre_ids": genre_id
+        }
+    ).sort("vote_average", -1).limit(5)
+
+    return parse_json(films)
+
 @router.get("/{film_id}")
 def get_film_by_id(film_id: int):
     film = films_collection.find_one({"_id": film_id})
