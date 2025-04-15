@@ -6,6 +6,8 @@ import json
 from typing import Optional
 
 router = APIRouter()
+def parse_json(data):
+    return json.loads(dumps(data))
 
 @router.get("/genres/")
 def get_all_genres():
