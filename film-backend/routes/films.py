@@ -12,13 +12,6 @@ def parse_json(data):
 def get_all_films(skip: int = 0, limit: int = 50):
     films = films_collection.find().skip(skip).limit(limit)
     return parse_json(films)
-@router.get("/{film_id}")
-def get_film_by_id(film_id: int):
-    film = films_collection.find_one({"_id": film_id})
-    if not film:
-        raise HTTPException(status_code=404, detail="Film non trouvé")
-    return parse_json(film)
-
 @router.post("/")
 def add_film(film: dict):
     film["_id"] = film["id"]
@@ -60,3 +53,28 @@ def search_films(
 
     films = films_collection.find(query)
     return parse_json(films)
+@router.get("/count")
+def get_total_films():
+    total = films_collection.count_documents({})
+    return {"total_films": total}
+
+@router.get("/oldest")
+def get_oldest_film():
+    film = films_collection.find_one(sort=[("release_date", 1)])
+    if not film:
+        raise HTTPException(status_code=404, detail="Aucun film trouvé")
+    return parse_json(film)
+
+@router.get("/newest")
+def get_newest_film():
+    film = films_collection.find_one(sort=[("release_date", -1)])
+    if not film:
+        raise HTTPException(status_code=404, detail="Aucun film trouvé")
+    return parse_json(film)
+
+@router.get("/{film_id}")
+def get_film_by_id(film_id: int):
+    film = films_collection.find_one({"_id": film_id})
+    if not film:
+        raise HTTPException(status_code=404, detail="Film non trouvé")
+    return parse_json(film)
