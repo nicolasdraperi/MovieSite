@@ -13,7 +13,7 @@ db = client["films_db"]
 collection = db["films"]
 
 def fetch_movies():
-    for page in range(500, 505):
+    for page in range(1, 505):
         url = f"https://api.themoviedb.org/3/discover/movie"
         params = {
             "api_key": API_KEY,
