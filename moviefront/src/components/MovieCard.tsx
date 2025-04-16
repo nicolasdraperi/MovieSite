@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
+import { useRouter } from 'next/navigation';
 
 interface MovieCardProps {
   movie: {
@@ -17,6 +18,11 @@ interface MovieCardProps {
 
 export default function MovieCard({ movie }: MovieCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const router = useRouter();
+
+  const handleClick = () => {
+    router.push(`/film/${movie._id}`);
+  };
 
   return (
     <motion.div
@@ -24,18 +30,17 @@ export default function MovieCard({ movie }: MovieCardProps) {
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ scale: 1.03 }}
       transition={{ duration: 0.2 }}
-      className="relative z-10" // Ajout d'un z-index pour être au-dessus de l'overlay
+      className="relative w-full h-full rounded-lg overflow-hidden" // Ajout de rounded-lg ici
+      onClick={handleClick}
     >
       <Card 
-        className="overflow-hidden cursor-pointer bg-card transition-colors relative"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        className="w-full h-full overflow-hidden cursor-pointer bg-card transition-colors relative rounded-none" // Ajout de rounded-none
       >
-        <div className="relative aspect-[2/3]">
+        <div className="relative w-full h-full">
           <img
             src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
             alt={movie.title}
-            className="object-cover w-full h-full"
+            className="w-full h-full object-cover"
             style={{ 
               WebkitBackfaceVisibility: 'hidden',
               backfaceVisibility: 'hidden'
@@ -46,6 +51,8 @@ export default function MovieCard({ movie }: MovieCardProps) {
             animate={{ opacity: isHovered ? 1 : 0 }}
             transition={{ duration: 0.2 }}
             className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30 p-4 flex flex-col justify-end"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
           >
             <h3 className="text-lg font-bold text-white mb-2 line-clamp-2">{movie.title}</h3>
             <p className="text-sm text-gray-200 line-clamp-3">{movie.overview}</p>
