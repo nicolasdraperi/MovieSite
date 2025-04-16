@@ -12,12 +12,6 @@ def parse_json(data):
 def get_all_films(skip: int = 0, limit: int = 50):
     films = films_collection.find().skip(skip).limit(limit)
     return parse_json(films)
-@router.get("/{film_id}")
-def get_film_by_id(film_id: int):
-    film = films_collection.find_one({"_id": film_id})
-    if not film:
-        raise HTTPException(status_code=404, detail="Film non trouvé")
-    return parse_json(film)
 
 @router.get("/genres/stats")
 def get_all_genres_with_counts():
@@ -163,3 +157,4 @@ def get_film_by_id(film_id: int):
     if not film:
         raise HTTPException(status_code=404, detail="Film non trouvé")
     return parse_json(film)
+
