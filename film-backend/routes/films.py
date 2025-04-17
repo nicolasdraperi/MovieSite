@@ -158,3 +158,15 @@ def get_film_by_id(film_id: int):
         raise HTTPException(status_code=404, detail="Film non trouvé")
     return parse_json(film)
 
+@router.post("/by-genre")
+def get_films_by_genre(payload: GenreRequest):
+    genre_id = payload.genre_id
+
+    films = films_collection.find(
+        {"genre_ids": genre_id}
+    ).sort([
+        ("vote_average", -1),
+        ("vote_count", -1)
+    ])
+
+    return parse_json(films)
