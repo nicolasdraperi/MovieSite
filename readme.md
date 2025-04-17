@@ -93,6 +93,8 @@ npm run dev
 |-------|-------------|
 | `/` | Liste des films | 
 | `/film/[id]` | Détails d'un film |
+| `/top` | Top Film Notation |
+| `/genre/[id]` |Film par Genre |
 
 ## 📦 Modèles de Données
 ### 🎥 Film
