@@ -5,7 +5,9 @@ from db.mongo import films_collection, genres_collection
 import json
 from typing import Optional
 router = APIRouter()
-
+from pydantic import BaseModel
+class GenreRequest(BaseModel):
+    genre_id: int
 def parse_json(data):
     return json.loads(dumps(data))
 @router.get("/")
@@ -13,35 +15,7 @@ def get_all_films(skip: int = 0, limit: int = 50):
     films = films_collection.find().skip(skip).limit(limit)
     return parse_json(films)
 
-@router.get("/genres/stats")
-def get_all_genres_with_counts():
-    pipeline = [
-        {"$unwind": "$genre_ids"},
-        {"$group": {"_id": "$genre_ids", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}}
-    ]
-    genre_counts = list(films_collection.aggregate(pipeline))
-    genres = list(genres_collection.find())
-    genre_lookup = {g["id"]: g["name"] for g in genres}
-    for g in genre_counts:
-        g["name"] = genre_lookup.get(g["_id"], "Inconnu")
-    return parse_json(genre_counts)
 
-@router.get("/genres/top5")
-def get_top_5_genres():
-    pipeline = [
-        {"$unwind": "$genre_ids"},
-        {"$group": {"_id": "$genre_ids", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 5}
-    ]
-    top_genres = list(films_collection.aggregate(pipeline))
-    genre_ids = [g["_id"] for g in top_genres]
-    genres = list(genres_collection.find({"id": {"$in": genre_ids}}))
-    genre_lookup = {g["id"]: g["name"] for g in genres}
-    for g in top_genres:
-        g["name"] = genre_lookup.get(g["_id"], "Inconnu")
-    return parse_json(top_genres)
 
 @router.post("/")
 def add_film(film: dict):
@@ -132,10 +106,7 @@ def get_average_rating():
 
     return {"average_rating": round(result[0]["average_rating"], 2)}
 
-from pydantic import BaseModel
 
-class GenreRequest(BaseModel):
-    genre_id: int
 
 @router.post("/top-by-genre")
 def get_top_films_by_genre(payload: GenreRequest):
