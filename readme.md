@@ -67,11 +67,10 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 ### Lancer le projet
 
 ```bash
-cd moviefront/film-backend/
-npm install
-
-# Configurer le .env.local
-NEXT_PUBLIC_API_URL=http://localhost:8000
+# Backend (depuis MovieSite/)
+uvicorn main:app --reload
+# Frontend (depuis moviefront/)
+npm run dev
 ```
 - Backend: http://localhost:8000
 - Frontend: http://localhost:3000

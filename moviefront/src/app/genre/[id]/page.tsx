@@ -1,31 +1,42 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { filmService } from '@/services/api';
 import NavBar from '@/components/NavBar';
 import MovieCard from '@/components/MovieCard';
 import { Button } from "@/components/ui/button";
 
+// Types
 interface Film {
-  _id: number;  // Changé de string à number
-  id: number;   // Ajouté
+  _id: number;
+  id: number;
   title: string;
   overview: string;
   poster_path: string;
   vote_average: number;
-  vote_count: number;  // Ajouté
+  vote_count: number;
   release_date: string;
   genre_ids: number[];
 }
 
-export default function Home() {
+interface GenreStats {
+  _id: number;
+  count: number;
+  name: string;
+}
+
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function GenrePage({ params }: PageProps) {
+  const resolvedParams = use(params);
   const [films, setFilms] = useState<Film[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [genreName, setGenreName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [totalFilms, setTotalFilms] = useState(0);
   const filmsPerPage = 20;
 
   useEffect(() => {
@@ -33,20 +44,17 @@ export default function Home() {
       try {
         setLoading(true);
         setError(null);
-        const skip = (currentPage - 1) * filmsPerPage;
         
-        // Récupérer les films
-        const data = await filmService.getAllFilms(skip, filmsPerPage);
-        if (currentPage === 1) {
-          setFilms(data);
-          // Récupérer le total seulement à la première page
-          const total = await filmService.getTotalFilms();
-          setTotalFilms(total);
-        } else {
-          setFilms(prev => [...prev, ...data]);
+        // Récupérer tous les films du genre
+        const data = await filmService.getFilmsByGenre(parseInt(resolvedParams.id));
+        setFilms(data);
+
+        // Récupérer les stats des genres pour le nom
+        const genresStats = await filmService.getGenresStats();
+        const genre = genresStats.find(g => g._id === parseInt(resolvedParams.id));
+        if (genre) {
+          setGenreName(genre.name);
         }
-        
-        setHasMore(data.length === filmsPerPage);
       } catch (error) {
         console.error('Erreur:', error);
         setError("Une erreur est survenue lors du chargement des films.");
@@ -56,7 +64,11 @@ export default function Home() {
     };
 
     fetchData();
-  }, [currentPage]);
+  }, [resolvedParams.id]);
+
+  // Pagination côté client
+  const paginatedFilms = films.slice(0, currentPage * filmsPerPage);
+  const hasMore = paginatedFilms.length < films.length;
 
   const loadMore = () => {
     setCurrentPage(prev => prev + 1);
@@ -73,14 +85,14 @@ export default function Home() {
           transition={{ duration: 0.3 }}
           className="relative z-10"
         >
-          <div className="flex flex-col mb-8">
+          <div className="flex justify-between items-center mb-8">
             <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/50">
-              Films Populaires
+              {genreName ? `Films - ${genreName}` : 'Chargement...'}
             </h1>
-            {totalFilms > 0 && (
-              <p className="text-muted-foreground mt-2">
-                {films.length} films affichés sur {totalFilms} au total
-              </p>
+            {films.length > 0 && (
+              <span className="text-muted-foreground">
+                {films.length} films trouvés
+              </span>
             )}
           </div>
           
@@ -95,7 +107,7 @@ export default function Home() {
           )}
 
           <AnimatePresence mode="wait">
-            {loading && films.length === 0 ? (
+            {loading ? (
               <motion.div 
                 key="loader"
                 initial={{ opacity: 0 }}
@@ -115,35 +127,22 @@ export default function Home() {
                 animate={{ opacity: 1 }}
                 className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"
               >
-                <AnimatePresence mode="popLayout">
-                  {films.map((film, index) => (
-                    <motion.div
-                      key={`${film._id}-${index}`}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ duration: 0.2, delay: index % 20 * 0.05 }}
-                      className="aspect-[2/3] overflow-hidden rounded-lg"
-                    >
-                      <MovieCard movie={film} />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+                {paginatedFilms.map((film, index) => (
+                  <motion.div
+                    key={`${film._id}-${index}`}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.2, delay: index % 20 * 0.05 }}
+                    className="aspect-[2/3] overflow-hidden rounded-lg"
+                  >
+                    <MovieCard movie={film} />
+                  </motion.div>
+                ))}
               </motion.div>
             )}
           </AnimatePresence>
 
-          {films.length === 0 && !loading && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg"
-            >
-              Aucun film trouvé
-            </motion.div>
-          )}
-
-          {hasMore && !loading && films.length > 0 && (
+          {hasMore && !loading && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -154,17 +153,19 @@ export default function Home() {
                 variant="outline"
                 size="lg"
                 className="w-full max-w-xs hover:bg-primary hover:text-primary-foreground transition-all duration-300"
-                disabled={loading}
               >
-                {loading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                    Chargement...
-                  </div>
-                ) : (
-                  'Charger plus de films'
-                )}
+                Charger plus de films
               </Button>
+            </motion.div>
+          )}
+
+          {films.length === 0 && !loading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg"
+            >
+              Aucun film trouvé pour ce genre
             </motion.div>
           )}
         </motion.div>

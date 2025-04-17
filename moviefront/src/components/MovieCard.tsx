@@ -7,12 +7,15 @@ import { useRouter } from 'next/navigation';
 
 interface MovieCardProps {
   movie: {
-    _id: string;
+    _id: number;  // Changé de string à number
+    id?: number;  // Optionnel, au cas où il est présent
     title: string;
     overview: string;
     poster_path: string;
     vote_average: number;
     release_date: string;
+    vote_count?: number;  // Optionnel, au cas où il est présent
+    genre_ids?: number[]; // Optionnel, au cas où il est présent
   }
 }
 
@@ -30,11 +33,11 @@ export default function MovieCard({ movie }: MovieCardProps) {
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ scale: 1.03 }}
       transition={{ duration: 0.2 }}
-      className="relative w-full h-full rounded-lg overflow-hidden" // Ajout de rounded-lg ici
+      className="relative w-full h-full rounded-lg overflow-hidden"
       onClick={handleClick}
     >
       <Card 
-        className="w-full h-full overflow-hidden cursor-pointer bg-card transition-colors relative rounded-none" // Ajout de rounded-none
+        className="w-full h-full overflow-hidden cursor-pointer bg-card transition-colors relative rounded-none"
       >
         <div className="relative w-full h-full">
           <img
@@ -57,9 +60,16 @@ export default function MovieCard({ movie }: MovieCardProps) {
             <h3 className="text-lg font-bold text-white mb-2 line-clamp-2">{movie.title}</h3>
             <p className="text-sm text-gray-200 line-clamp-3">{movie.overview}</p>
             <div className="flex items-center justify-between mt-2">
-              <span className="text-yellow-400 flex items-center gap-1 font-medium">
-                ⭐ {movie.vote_average.toFixed(1)}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-yellow-400 flex items-center gap-1 font-medium">
+                  ⭐ {movie.vote_average.toFixed(1)}
+                </span>
+                {movie.vote_count && (
+                  <span className="text-gray-400 text-sm">
+                    ({movie.vote_count} votes)
+                  </span>
+                )}
+              </div>
               <span className="text-gray-300 font-medium">
                 {new Date(movie.release_date).getFullYear()}
               </span>
