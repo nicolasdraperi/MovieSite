@@ -111,7 +111,7 @@ export default function NavBar() {
                       whileHover={{ scale: 1.05 }}
                       className="font-bold text-xl"
                     >
-                      <Link href="/" className="hover:text-primary">MovieDB</Link>
+                      <Link href="/" className="hover:text-primary">CinéZone</Link>
                     </motion.div>
                   </NavigationMenuItem>
 
