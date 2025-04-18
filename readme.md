@@ -1,6 +1,6 @@
-# 🎬 MovieSite
+# 🎬 CinéZone
 
-**MovieSite** est une application moderne de découverte de films, construite avec **Next.js** et **FastAPI**. Elle permet d'explorer des films populaires, de faire des recherches, et de profiter d'une interface fluide et responsive.
+**CinéZone** est une application moderne de découverte de films, construite avec **Next.js** et **FastAPI**. Elle permet d'explorer des films populaires, de faire des recherches, et de profiter d'une interface fluide et responsive.
 
 ---
 
