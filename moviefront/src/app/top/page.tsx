@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { filmService } from '@/services/api';
 import NavBar from '@/components/NavBar';
-import MovieCard from '@/components/MovieCard';
+import TopMovieCard from '@/components/TopMovieCard';
 import { Trophy, Star, Calendar, Users, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   Dialog,
@@ -44,13 +44,13 @@ export default function TopFilmsPage() {
       try {
         setLoading(true);
         setError(null);
-        
+
         const [data, total, genresData] = await Promise.all([
           filmService.getTopFilms(),
           filmService.getTotalFilms(),
           filmService.getGenresStats()
         ]);
-        
+
         setFilms(data);
         setTotalFilms(total);
         const genresMap = genresData.reduce((acc, genre) => ({
@@ -88,7 +88,7 @@ export default function TopFilmsPage() {
   return (
     <div className="relative min-h-screen bg-background">
       <NavBar />
-      
+
       <main className="container mx-auto px-4 py-8" style={{ paddingTop: "6rem" }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -105,7 +105,7 @@ export default function TopFilmsPage() {
             </div>
             <div className="flex flex-col items-center gap-2">
               <p className="text-lg text-muted-foreground">
-                Les 10 films les mieux notés avec au moins 25 votes
+                Les 10 films les mieux notés avec au moins 500 votes
               </p>
               {totalFilms > 0 && (
                 <p className="text-sm text-muted-foreground/80">
@@ -127,7 +127,7 @@ export default function TopFilmsPage() {
 
           <AnimatePresence mode="wait">
             {loading ? (
-              <motion.div 
+              <motion.div
                 key="loader"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -140,7 +140,7 @@ export default function TopFilmsPage() {
                 </div>
               </motion.div>
             ) : (
-              <motion.div 
+              <motion.div
                 key="grid"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -163,8 +163,8 @@ export default function TopFilmsPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
-                    <MovieCard movie={film} />
+                    <div className="absolute inset-0 p-4 flex flex-col justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-40"></div>
+                    <TopMovieCard movie={film} />
                   </motion.div>
                 ))}
               </motion.div>
@@ -192,7 +192,7 @@ export default function TopFilmsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                     <Card className="overflow-hidden h-full">
                       <div className="relative aspect-[2/3] w-full">
-                        <img 
+                        <img
                           src={`https://image.tmdb.org/t/p/w500${selectedFilm.poster_path}`}
                           alt={selectedFilm.title}
                           className="absolute inset-0 w-full h-full object-cover"

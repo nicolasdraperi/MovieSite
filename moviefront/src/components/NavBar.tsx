@@ -145,6 +145,15 @@ export default function NavBar() {
                       Top Films
                     </Link>
                   </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <Link
+                      href="/advanced-search"
+                      className="hover:text-primary transition-colors"
+                    >
+                      Recherche avancée
+                    </Link>
+                </NavigationMenuItem>
+
                 </NavigationMenuList>
               </NavigationMenu>
 

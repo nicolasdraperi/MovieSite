@@ -109,7 +109,7 @@ def get_top_films():
     films = films_collection.find(
         {
             "vote_average": {"$ne": 0},
-            "vote_count": {"$gte": 25}
+            "vote_count": {"$gte": 500}
         }
     ).sort("vote_average", -1).limit(10)
 
